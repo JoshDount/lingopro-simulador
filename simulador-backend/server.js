@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// 1. Inicialización y Middleware (¡Esto siempre va primero!)
+// 1. Inicialización y Middleware
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -15,12 +15,12 @@ const JWT_SECRET = process.env.JWT_SECRET || "itc_culiacan_secret_2026";
 
 // 2. Configuración de MySQL
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,                               // El Host de tu imagen
-    port: process.env.DB_PORT,                               // El Port de tu imagen
-    user: process.env.DB_USER,                               // El User de tu imagen
-    password: process.env.DB_PASSWORD,                       // El Password oculto
-    database: process.env.DB_NAME,                           // El Database name de tu imagen
-    ssl: { rejectUnauthorized: false }                       // Obligatorio para Aiven (SSL REQUIRED)
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: { rejectUnauthorized: false }
 });
 
 db.connect((err) => {
@@ -38,29 +38,35 @@ const model = genAI.getGenerativeModel({
 // 4. Rutas (Endpoints)
 
 // --- RUTAS DE AUTENTICACIÓN ---
+
+// ✅ CORREGIDO: tabla 'usuarios', columna 'password', columna 'correo'
 app.post('/api/auth/registro', async (req, res) => {
     const { nombre, email, password } = req.body;
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const query = 'INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO usuarios (nombre, correo, password) VALUES (?, ?, ?)';
     db.query(query, [nombre, email, hash], (err) => {
-        if (err) return res.status(500).json({ error: "Error al registrar" });
-        res.json({ mensaje: "Alumno registrado con éxito" });
+        if (err) {
+            console.error("Error al registrar:", err);
+            return res.status(500).json({ error: "Error al registrar. El correo puede ya existir." });
+        }
+        res.json({ mensaje: "Usuario registrado con éxito" });
     });
 });
 
+// ✅ NUEVA RUTA: Login (faltaba completamente)
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM usuarios WHERE email = ?', [email], async (err, resultados) => {
-        if (err || resultados.length === 0) 
+    db.query('SELECT * FROM usuarios WHERE correo = ?', [email], async (err, resultados) => {
+        if (err || resultados.length === 0)
             return res.status(401).json({ error: "Usuario no encontrado" });
 
         const usuario = resultados[0];
-        const passwordValida = await bcrypt.compare(password, usuario.password_hash);
+        const passwordValida = await bcrypt.compare(password, usuario.password);
 
-        if (!passwordValida) 
+        if (!passwordValida)
             return res.status(401).json({ error: "Contraseña incorrecta" });
 
         const token = jwt.sign(
@@ -83,11 +89,9 @@ app.get('/api/estado', (req, res) => {
 });
 
 // --- RUTA DE LA IA ---
-// --- RUTA DE LA IA (Actualizada para máxima variedad) ---
 app.get('/api/ia/generar/:modulo', async (req, res) => {
     const modulo = req.params.modulo;
     
-    // 1. LA MAGIA: Creamos un banco de temas aleatorios y creativos
     const temas = [
         "a futuristic city on Mars", "a weird cooking disaster in a restaurant", 
         "time travel to the 1980s", "a deep ocean exploration submarine", 
@@ -98,17 +102,12 @@ app.get('/api/ia/generar/:modulo', async (req, res) => {
         "a mystery novel plot", "a music festival in the rain"
     ];
     
-    // 2. Escogemos un tema diferente en cada petición
     const temaAleatorio = temas[Math.floor(Math.random() * temas.length)];
 
-    // 3. Le exigimos a la IA que use el tema aleatorio y sea original
     const instrucciones = {
         listening: `Generate a highly unique and creative sentence STRICTLY IN ENGLISH about: ${temaAleatorio}. It MUST be different from typical examples. Return JSON: { "original": "full english sentence", "missing": "one key word" }`,
-        
         reading: `Create a unique 50-word story STRICTLY IN ENGLISH about: ${temaAleatorio}. Make the plot interesting and unpredictable. Then create 3 multiple choice questions about it. Return JSON: { "texto": "...", "preguntas": [...] }`,
-        
         writing: `Give a creative writing challenge STRICTLY IN ENGLISH for a student. The topic MUST be about: ${temaAleatorio}. Return JSON: { "prompt": "..." }`,
-        
         speaking: `Generate a unique, natural conversational sentence STRICTLY IN ENGLISH (10-15 words) about: ${temaAleatorio}. Return JSON: { "text_to_speak": "..." }`
     };
 
@@ -117,7 +116,6 @@ app.get('/api/ia/generar/:modulo', async (req, res) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         
-        // Limpiamos el JSON para evitar errores en React
         let textoBruto = response.text();
         const textoLimpio = textoBruto.replace(/```json/g, "").replace(/```/g, "").trim();
         const data = JSON.parse(textoLimpio);
@@ -128,30 +126,27 @@ app.get('/api/ia/generar/:modulo', async (req, res) => {
         res.status(500).json({ error: "No se pudo generar el ejercicio" });
     }
 });
+
 // ==========================================
 //    MIDDLEWARE DE SEGURIDAD (JWT)
 // ==========================================
 const verificarToken = (req, res, next) => {
-    // Pedimos el token que viene en los "Headers" de la petición
     const token = req.header('Authorization');
-    
     if (!token) return res.status(401).json({ error: 'Acceso denegado. No hay token.' });
     
     try {
-        // Verificamos que la firma sea la tuya y no esté falsificada
         const verificado = jwt.verify(token, JWT_SECRET);
         req.usuario = verificado;
-        next(); // Si el token es real, lo dejamos pasar a la ruta
+        next();
     } catch (error) {
         res.status(400).json({ error: 'Token inválido o expirado.' });
     }
 };
 
 // ==========================================
-//    NUEVA RUTA: SALÓN DE LA FAMA (RANKING)
+//    RANKING
 // ==========================================
 app.get('/api/ranking', verificarToken, (req, res) => {
-    // CORRECCIÓN: Apuntamos a tu tabla 'usuarios' y cruzamos los datos con 'historial_practicas'
     const query = `
         SELECT 
             u.nombre, 
@@ -172,15 +167,15 @@ app.get('/api/ranking', verificarToken, (req, res) => {
         res.json(resultados);
     });
 });
+
 // ==========================================
 //    RUTAS DE PROGRESO Y CALIFICACIONES
 // ==========================================
 
-// 1. GUARDAR LA NOTA (De React a MySQL)
+// GUARDAR LA NOTA
 app.post('/api/progreso/guardar', (req, res) => {
     const { id_usuario, modulo, aciertos } = req.body; 
     
-    // Guardamos en historial_practicas
     const query = 'INSERT INTO historial_practicas (id_usuario, id_ejercicio, puntaje, texto_ingresado) VALUES (?, 1, ?, ?)';
     
     db.query(query, [id_usuario, aciertos, modulo], (err) => {
@@ -192,12 +187,10 @@ app.post('/api/progreso/guardar', (req, res) => {
     });
 });
 
-// 2. LEER LAS NOTAS (De MySQL a React para 'Ver Mis Notas')
+// LEER LAS NOTAS
 app.get('/api/progreso/:id_usuario', (req, res) => {
     const id_usuario = req.params.id_usuario;
     
-    // Pedimos a la BD las columnas exactas de tu tabla, 
-    // y usamos "AS" para que React las reciba con los nombres que espera
     const query = `
         SELECT 
             texto_ingresado AS modulo, 
@@ -213,11 +206,11 @@ app.get('/api/progreso/:id_usuario', (req, res) => {
             console.error("Error al leer historial:", err);
             return res.status(500).json({ error: "Error al consultar la base de datos" });
         }
-        // Le enviamos la lista de calificaciones a React
         res.json(resultados);
     });
 });
-// 5. Iniciar el servidor (¡Siempre al final!)
+
+// 5. Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('Servidor en puerto ' + PORT);
