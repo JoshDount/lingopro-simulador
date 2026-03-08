@@ -108,7 +108,7 @@ app.get('/api/ia/generar/:modulo', async (req, res) => {
     const instrucciones = {
         listening: `Generate a highly unique and creative sentence STRICTLY IN ENGLISH about: ${temaAleatorio}. It MUST be different from typical examples. Return JSON: { "original": "full english sentence", "missing": "one key word" }`,
         
-        reading: `Create a unique 50-word story STRICTLY IN ENGLISH about: ${temaAleatorio}. Make the plot interesting and unpredictable. Then create 3 multiple choice questions about it. You MUST return the JSON STRICTLY in this exact format, do not change the keys: { "texto": "...", "preguntas": [ { "pregunta": "...", "opciones": { "a": "...", "b": "...", "c": "...", "d": "..." }, "correcta": "a" } ] }`,
+        reading: `Create a unique 50-word story STRICTLY IN ENGLISH about: ${temaAleatorio}. Then create 3 multiple choice questions. CRITICAL RULES: 1) The "correcta" field MUST be ONLY a single lowercase letter: "a", "b", "c" or "d". NEVER write "a) text" or anything else, ONLY the letter. 2) Return ONLY this JSON, no extra text: { "texto": "...", "preguntas": [ { "pregunta": "...", "opciones": { "a": "...", "b": "...", "c": "...", "d": "..." }, "correcta": "b" } ] }`,
         
         writing: `Give a creative writing challenge STRICTLY IN ENGLISH for a student. The topic MUST be about: ${temaAleatorio}. Return JSON: { "prompt": "..." }`,
         

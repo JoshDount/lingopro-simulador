@@ -92,21 +92,13 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      // 1. Lo que tú elegiste (la letra y el texto)
-      const miLetra = String(respuestas[p.id]).toLowerCase(); // ej: "b"
-      const miTexto = String(p.opciones[miLetra]).toLowerCase().trim(); // ej: "they sacrificed..."
-      
-      // 2. Lo que mandó la IA
-      const respuestaIA = String(p.correcta).toLowerCase().trim(); // ej: "b) they sacrificed..."
+      // Comparación simple: solo tomamos el primer carácter de la respuesta de la IA
+      // Esto protege contra casos donde la IA manda "a) texto..." en vez de solo "a"
+      const miLetra = String(respuestas[p.id]).toLowerCase().trim();
+      const correcta = String(p.correcta).toLowerCase().trim().charAt(0);
 
-      // 3. Prueba 1: ¿La respuesta de la IA empieza con tu letra? (Busca "b", "b)", "b.")
-      const coincideLetra = respuestaIA === miLetra || respuestaIA.startsWith(miLetra + ")") || respuestaIA.startsWith(miLetra + ".");
-      
-      // 4. Prueba 2: ¿El texto de la IA contiene tu respuesta, o viceversa?
-      const coincideTexto = respuestaIA.includes(miTexto) || miTexto.includes(respuestaIA);
-
-      if (coincideLetra || coincideTexto) {
-          aciertos++;
+      if (miLetra === correcta) {
+        aciertos++;
       }
     });
 
