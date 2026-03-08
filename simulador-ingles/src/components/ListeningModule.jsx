@@ -72,7 +72,10 @@ export default function ListeningModule() {
     let puntaje = 0;
     
     // 1. Verificamos si es correcto
-    if (userInput.toLowerCase().trim() === ejercicio.correct_word.toLowerCase().trim()) {
+    const miPalabra = userInput.toLowerCase().replace(/[.,?!]/g, '').trim();
+    const palabraIA = ejercicio.correct_word.toLowerCase().replace(/[.,?!]/g, '').trim();
+
+    if (miPalabra === palabraIA) {
       puntaje = 10;
       setFeedback({ mensaje: "✅ ¡Perfecto! Calificación: 10/10. Cambiando de ejercicio...", tipo: "text-green-600" });
     } else {

@@ -25,8 +25,11 @@ function App() {
   }, []);
 
   const cerrarSesion = () => {
-    localStorage.clear();
-    setUsuario(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('id_usuario');
+    // También limpiamos el nombre por si acaso
+    localStorage.removeItem('usuario_nombre');
+    window.location.reload(); 
   };
 
   // --- LÓGICA DE PANTALLA DE ACCESO ---
