@@ -71,7 +71,11 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      if (respuestas[p.id] === p.correcta) aciertos++;
+      // Forzamos a que ambas respuestas sean minúsculas y tomamos solo la primera letra (a, b, c)
+      const miRespuesta = String(respuestas[p.id]).charAt(0).toLowerCase();
+      const respuestaIA = String(p.correcta).charAt(0).toLowerCase();
+      
+      if (miRespuesta === respuestaIA) aciertos++;
     });
 
     // Matemática pura: Regla de 3 redondeada

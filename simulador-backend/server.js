@@ -176,7 +176,8 @@ app.get('/api/ranking', verificarToken, (req, res) => {
 app.post('/api/progreso/guardar', (req, res) => {
     const { id_usuario, modulo, aciertos } = req.body; 
     
-    const query = 'INSERT INTO historial_practicas (id_usuario, id_ejercicio, puntaje, texto_ingresado) VALUES (?, 1, ?, ?)';
+    // CORRECCIÓN: Cambiamos el '1' por 'NULL' para que MySQL no pida que exista un ejercicio previo
+    const query = 'INSERT INTO historial_practicas (id_usuario, id_ejercicio, puntaje, texto_ingresado) VALUES (?, NULL, ?, ?)';
     
     db.query(query, [id_usuario, aciertos, modulo], (err) => {
         if (err) {
