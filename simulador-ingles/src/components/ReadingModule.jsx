@@ -71,11 +71,27 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      // Forzamos a que ambas respuestas sean minúsculas y tomamos solo la primera letra (a, b, c)
-      const miRespuesta = String(respuestas[p.id]).charAt(0).toLowerCase();
-      const respuestaIA = String(p.correcta).charAt(0).toLowerCase();
-      
-      if (miRespuesta === respuestaIA) aciertos++;
+      // 1. Obtenemos lo que seleccionaste ("0", "1", "a", "b")
+      let seleccion = String(respuestas[p.id]).toLowerCase();
+
+      // 2. MAGIA: Si la IA mandó un arreglo (0, 1, 2), lo convertimos a letras (a, b, c)
+      if (!isNaN(seleccion)) {
+          // El código ASCII de la 'a' es 97, así que 0 se vuelve 'a', 1 se vuelve 'b'...
+          seleccion = String.fromCharCode(97 + parseInt(seleccion));
+      }
+
+      // 3. Limpiamos la respuesta correcta y el texto de tu opción
+      const respuestaIA = String(p.correcta).trim().toLowerCase();
+      const textoOpcion = String(p.opciones[respuestas[p.id]]).trim().toLowerCase();
+
+      // 4. Comprobamos los 3 escenarios posibles en los que la IA te puede evaluar
+      if (
+          seleccion === respuestaIA.charAt(0) || // Escenario A: Tu letra coincide con la de la IA
+          textoOpcion === respuestaIA ||         // Escenario B: El texto de la opción es exactamente la respuesta
+          textoOpcion.includes(respuestaIA)      // Escenario C: La opción incluye la respuesta (ej. "a) gato")
+      ) {
+          aciertos++;
+      }
     });
 
     // Matemática pura: Regla de 3 redondeada
