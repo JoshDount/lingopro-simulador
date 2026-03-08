@@ -15,10 +15,12 @@ const JWT_SECRET = "itc_culiacan_secret_2026";
 
 // 2. Configuración de MySQL
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', 
-    database: 'simulador_pro'
+    host: 'mysql-3b56a3e3-tareasromant-6ac2.a.aivencloud.com', // El Host de tu imagen
+    port: 24690,                                             // El Port de tu imagen
+    user: 'avnadmin',                                        // El User de tu imagen
+    password: process.env.DB_PASSWORD,                       // El Password oculto
+    database: 'defaultdb',                                   // El Database name de tu imagen
+    ssl: { rejectUnauthorized: false }                       // Obligatorio para Aiven (SSL REQUIRED)
 });
 
 db.connect((err) => {
@@ -189,7 +191,7 @@ app.get('/api/progreso/:id_usuario', (req, res) => {
     });
 });
 // 5. Iniciar el servidor (¡Siempre al final!)
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
+    console.log('Servidor en puerto ' + PORT);
 });
