@@ -14,7 +14,7 @@ export default function SpeakingModule() {
     setTranscripcion("...");
     setFeedback({ mensaje: "", tipo: "" });
     try {
-      const res = await fetch('http://localhost:3000/api/ia/generar/speaking');
+      const res = await fetch('https://lingopro-simulador.onrender.com/api/ia/generar/speaking');
       const data = await res.json();
       setTextoObjetivo(data.text_to_speak); 
     } catch (e) {
@@ -30,7 +30,7 @@ export default function SpeakingModule() {
     if (!id_usuario) return;
 
     try {
-      await fetch('http://localhost:3000/api/progreso/guardar', {
+      await fetch('https://lingopro-simulador.onrender.com/api/progreso/guardar', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

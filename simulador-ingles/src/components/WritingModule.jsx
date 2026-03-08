@@ -16,7 +16,7 @@ export default function WritingModule() {
     setCorrecciones([]);
     setFeedback({ mensaje: "", tipo: "" });
     try {
-      const res = await fetch('http://localhost:3000/api/ia/generar/writing');
+      const res = await fetch('https://lingopro-simulador.onrender.com/api/ia/generar/writing');
       const data = await res.json();
       setPromptTexto(data.prompt); 
     } catch (e) { 
@@ -34,7 +34,7 @@ export default function WritingModule() {
     if (!id_usuario) return;
 
     try {
-      await fetch('http://localhost:3000/api/progreso/guardar', {
+      await fetch('https://lingopro-simulador.onrender.com/api/progreso/guardar', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
