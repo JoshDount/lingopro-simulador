@@ -43,10 +43,37 @@ app.post('/api/auth/registro', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const query = 'INSERT INTO alumnos (nombre, email, password_hash) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)';
     db.query(query, [nombre, email, hash], (err) => {
         if (err) return res.status(500).json({ error: "Error al registrar" });
         res.json({ mensaje: "Alumno registrado con éxito" });
+    });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    db.query('SELECT * FROM usuarios WHERE email = ?', [email], async (err, resultados) => {
+        if (err || resultados.length === 0) 
+            return res.status(401).json({ error: "Usuario no encontrado" });
+
+        const usuario = resultados[0];
+        const passwordValida = await bcrypt.compare(password, usuario.password_hash);
+
+        if (!passwordValida) 
+            return res.status(401).json({ error: "Contraseña incorrecta" });
+
+        const token = jwt.sign(
+            { id_usuario: usuario.id_usuario, nombre: usuario.nombre },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({ 
+            token, 
+            nombre: usuario.nombre, 
+            id_usuario: usuario.id_usuario 
+        });
     });
 });
 
