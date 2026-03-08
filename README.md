@@ -1,4 +1,5 @@
 LingoPro - Simulador de Inglés Avanzado con IA 🚀
+
 LingoPro es una plataforma educativa Full-Stack que utiliza Inteligencia Artificial (Google Gemini) para generar retos de aprendizaje dinámicos. Evalúa las cuatro habilidades lingüísticas fundamentales (Reading, Listening, Speaking, Writing) mediante una arquitectura moderna distribuida en la nube.
 
 🛠️ Tecnologías Utilizadas
@@ -57,6 +58,7 @@ Frontend (/simulador-ingles):
 
 Fragmento de código
 VITE_API_URL=https://tu-url-de-render.com
+
 🚀 Despliegue (Deployment)
 El proyecto está optimizado para trabajar en entornos distribuidos:
 
