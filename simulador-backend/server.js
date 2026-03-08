@@ -104,10 +104,14 @@ app.get('/api/ia/generar/:modulo', async (req, res) => {
     
     const temaAleatorio = temas[Math.floor(Math.random() * temas.length)];
 
+    // Le decimos a la IA EXACTAMENTE cómo queremos que se llamen las llaves del JSON
     const instrucciones = {
         listening: `Generate a highly unique and creative sentence STRICTLY IN ENGLISH about: ${temaAleatorio}. It MUST be different from typical examples. Return JSON: { "original": "full english sentence", "missing": "one key word" }`,
-        reading: `Create a unique 50-word story STRICTLY IN ENGLISH about: ${temaAleatorio}. Make the plot interesting and unpredictable. Then create 3 multiple choice questions about it. Return JSON: { "texto": "...", "preguntas": [...] }`,
+        
+        reading: `Create a unique 50-word story STRICTLY IN ENGLISH about: ${temaAleatorio}. Make the plot interesting and unpredictable. Then create 3 multiple choice questions about it. You MUST return the JSON STRICTLY in this exact format, do not change the keys: { "texto": "...", "preguntas": [ { "pregunta": "...", "opciones": { "a": "...", "b": "...", "c": "...", "d": "..." }, "correcta": "a" } ] }`,
+        
         writing: `Give a creative writing challenge STRICTLY IN ENGLISH for a student. The topic MUST be about: ${temaAleatorio}. Return JSON: { "prompt": "..." }`,
+        
         speaking: `Generate a unique, natural conversational sentence STRICTLY IN ENGLISH (10-15 words) about: ${temaAleatorio}. Return JSON: { "text_to_speak": "..." }`
     };
 
