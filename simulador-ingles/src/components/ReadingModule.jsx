@@ -21,12 +21,43 @@ export default function ReadingModule() {
         return;
       }
 
-      const preguntasNormalizadas = data.preguntas.map((p, index) => ({
-        id: p.id ?? index + 1,
-        text: p.text || p.question || p.pregunta || `Pregunta ${index + 1}`,
-        opciones: p.opciones || p.options || {},
-        correcta: p.correcta || p.correct || p.answer || "a"
-      }));
+      // Convertimos el desastre de la IA a un formato perfecto
+      const preguntasNormalizadas = data.preguntas.map((p, index) => {
+        
+        // 1. Forzar que las opciones sean SIEMPRE { a: "...", b: "...", c: "..." }
+        let opcionesSeguras = {};
+        const opcionesCrudas = p.opciones || p.options || {};
+        
+        if (Array.isArray(opcionesCrudas)) {
+          // Si mandó [ "opcion 1", "opcion 2" ], las pasamos a letras
+          opcionesCrudas.forEach((opt, i) => {
+            opcionesSeguras[String.fromCharCode(97 + i)] = opt; 
+          });
+        } else {
+          opcionesSeguras = opcionesCrudas;
+        }
+
+        // 2. Forzar que la respuesta correcta sea SIEMPRE una sola letra exacta
+        let respuestaSegura = String(p.correcta || p.correct || p.answer || "a").toLowerCase().trim();
+        
+        if (respuestaSegura.length > 1) { 
+          // Si la IA mandó todo el texto ("The correct answer") en vez de la letra
+          const letra = Object.keys(opcionesSeguras).find(key => 
+            opcionesSeguras[key].toLowerCase().includes(respuestaSegura)
+          );
+          respuestaSegura = letra || "a"; 
+        } else { 
+          // Si mandó "A", "a)", etc.
+          respuestaSegura = respuestaSegura.charAt(0);
+        }
+
+        return {
+          id: p.id ?? index + 1,
+          text: p.text || p.question || p.pregunta || `Pregunta ${index + 1}`,
+          opciones: opcionesSeguras,
+          correcta: respuestaSegura
+        };
+      });
 
       setEjercicio({ texto: data.texto, preguntas: preguntasNormalizadas });
 
@@ -71,25 +102,8 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      // 1. Obtenemos lo que seleccionaste ("0", "1", "a", "b")
-      let seleccion = String(respuestas[p.id]).toLowerCase();
-
-      // 2. MAGIA: Si la IA mandó un arreglo (0, 1, 2), lo convertimos a letras (a, b, c)
-      if (!isNaN(seleccion)) {
-          // El código ASCII de la 'a' es 97, así que 0 se vuelve 'a', 1 se vuelve 'b'...
-          seleccion = String.fromCharCode(97 + parseInt(seleccion));
-      }
-
-      // 3. Limpiamos la respuesta correcta y el texto de tu opción
-      const respuestaIA = String(p.correcta).trim().toLowerCase();
-      const textoOpcion = String(p.opciones[respuestas[p.id]]).trim().toLowerCase();
-
-      // 4. Comprobamos los 3 escenarios posibles en los que la IA te puede evaluar
-      if (
-          seleccion === respuestaIA.charAt(0) || // Escenario A: Tu letra coincide con la de la IA
-          textoOpcion === respuestaIA ||         // Escenario B: El texto de la opción es exactamente la respuesta
-          textoOpcion.includes(respuestaIA)      // Escenario C: La opción incluye la respuesta (ej. "a) gato")
-      ) {
+      // Como ya forzamos a, b, c, d desde el principio, evaluamos exactamente lo que es
+      if (respuestas[p.id] === p.correcta) {
           aciertos++;
       }
     });
