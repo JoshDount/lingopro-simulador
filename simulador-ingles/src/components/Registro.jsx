@@ -5,7 +5,7 @@ export default function Registro({ alTerminar }) {
 
   const enviar = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://lingopro-simulador.onrender.com/api/auth/registro', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/registro`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)

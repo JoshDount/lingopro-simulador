@@ -13,7 +13,7 @@ export default function ListeningModule() {
     setUserInput("");
     setFeedback({ mensaje: "", tipo: "" });
     try {
-      const res = await fetch('https://lingopro-simulador.onrender.com/api/ia/generar/listening');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ia/generar/listening`);
       const data = await res.json();
       
       const oracionManejada = data.original || data.full_sentence || "The API didn't return a valid sentence.";
@@ -49,7 +49,7 @@ export default function ListeningModule() {
     if (!id_usuario) return; 
 
     try {
-        await fetch('https://lingopro-simulador.onrender.com/api/progreso/guardar', {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/progreso/guardar`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ export default function Ranking({ volverAlSimulador }) {
   useEffect(() => {
     const cargarRanking = async () => {
       try {
-        const res = await fetch('https://lingopro-simulador.onrender.com/api/ranking', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ranking`, {
           headers: { 'Authorization': localStorage.getItem('token') } // Enviamos el token
         });
         if (res.ok) {

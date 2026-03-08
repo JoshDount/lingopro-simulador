@@ -10,7 +10,7 @@ export default function Perfil({ volverAlSimulador }) {
       if (!id_usuario) return;
 
       try {
-        const res = await fetch(`https://lingopro-simulador.onrender.com/api/progreso/${id_usuario}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/progreso/${id_usuario}`, {
           headers: {
             'Authorization': localStorage.getItem('token')
           }
