@@ -27,7 +27,7 @@ export default function ReadingModule() {
         let opcionesSeguras = {};
         const opcionesCrudas = p.opciones || p.options || {};
         
-        // 1. FORZAMOS A QUE LAS LLAVES SEAN SIEMPRE 'a', 'b', 'c', 'd'
+        // Limpiamos los botones para que siempre sean 'a', 'b', 'c', 'd'
         if (Array.isArray(opcionesCrudas)) {
           opcionesCrudas.forEach((opt, i) => {
             opcionesSeguras[String.fromCharCode(97 + i)] = String(opt); 
@@ -40,25 +40,12 @@ export default function ReadingModule() {
           }
         }
 
-        // 2. BUSCAMOS LA RESPUESTA CORRECTA
-        let respuestaSegura = String(p.correcta || p.correct || p.answer || "a").toLowerCase().trim();
-        
-        if (respuestaSegura.length > 1) { 
-          // Si la IA mandó todo el texto ("The red car") en vez de la letra
-          const letra = Object.keys(opcionesSeguras).find(key => 
-            opcionesSeguras[key].toLowerCase().includes(respuestaSegura)
-          );
-          respuestaSegura = letra || "a"; 
-        } else { 
-          // Si mandó "a", "A", "a)", etc., tomamos solo la primera letra
-          respuestaSegura = respuestaSegura.charAt(0);
-        }
-
         return {
           id: p.id ?? index + 1,
           text: p.text || p.question || p.pregunta || `Pregunta ${index + 1}`,
           opciones: opcionesSeguras,
-          correcta: respuestaSegura
+          // Guardamos la respuesta EXACTAMENTE como la manda la IA, sin alterarla
+          correcta: String(p.correcta || p.correct || p.answer || "a") 
         };
       });
 
@@ -105,11 +92,20 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      // Por pura paranoia, forzamos tu clic y la correcta a ser una sola letra minúscula
-      const miRespuesta = String(respuestas[p.id]).charAt(0).toLowerCase();
-      const laCorrecta = String(p.correcta).charAt(0).toLowerCase();
+      // 1. Lo que tú elegiste (la letra y el texto)
+      const miLetra = String(respuestas[p.id]).toLowerCase(); // ej: "b"
+      const miTexto = String(p.opciones[miLetra]).toLowerCase().trim(); // ej: "they sacrificed..."
       
-      if (miRespuesta === laCorrecta) {
+      // 2. Lo que mandó la IA
+      const respuestaIA = String(p.correcta).toLowerCase().trim(); // ej: "b) they sacrificed..."
+
+      // 3. Prueba 1: ¿La respuesta de la IA empieza con tu letra? (Busca "b", "b)", "b.")
+      const coincideLetra = respuestaIA === miLetra || respuestaIA.startsWith(miLetra + ")") || respuestaIA.startsWith(miLetra + ".");
+      
+      // 4. Prueba 2: ¿El texto de la IA contiene tu respuesta, o viceversa?
+      const coincideTexto = respuestaIA.includes(miTexto) || miTexto.includes(respuestaIA);
+
+      if (coincideLetra || coincideTexto) {
           aciertos++;
       }
     });
