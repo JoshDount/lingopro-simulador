@@ -24,30 +24,33 @@ export default function ReadingModule() {
       // Convertimos el desastre de la IA a un formato perfecto
       const preguntasNormalizadas = data.preguntas.map((p, index) => {
         
-        // 1. Forzar que las opciones sean SIEMPRE { a: "...", b: "...", c: "..." }
         let opcionesSeguras = {};
         const opcionesCrudas = p.opciones || p.options || {};
         
+        // 1. FORZAMOS A QUE LAS LLAVES SEAN SIEMPRE 'a', 'b', 'c', 'd'
         if (Array.isArray(opcionesCrudas)) {
-          // Si mandó [ "opcion 1", "opcion 2" ], las pasamos a letras
           opcionesCrudas.forEach((opt, i) => {
-            opcionesSeguras[String.fromCharCode(97 + i)] = opt; 
+            opcionesSeguras[String.fromCharCode(97 + i)] = String(opt); 
           });
         } else {
-          opcionesSeguras = opcionesCrudas;
+          let i = 0;
+          for (const key in opcionesCrudas) {
+            opcionesSeguras[String.fromCharCode(97 + i)] = String(opcionesCrudas[key]);
+            i++;
+          }
         }
 
-        // 2. Forzar que la respuesta correcta sea SIEMPRE una sola letra exacta
+        // 2. BUSCAMOS LA RESPUESTA CORRECTA
         let respuestaSegura = String(p.correcta || p.correct || p.answer || "a").toLowerCase().trim();
         
         if (respuestaSegura.length > 1) { 
-          // Si la IA mandó todo el texto ("The correct answer") en vez de la letra
+          // Si la IA mandó todo el texto ("The red car") en vez de la letra
           const letra = Object.keys(opcionesSeguras).find(key => 
             opcionesSeguras[key].toLowerCase().includes(respuestaSegura)
           );
           respuestaSegura = letra || "a"; 
         } else { 
-          // Si mandó "A", "a)", etc.
+          // Si mandó "a", "A", "a)", etc., tomamos solo la primera letra
           respuestaSegura = respuestaSegura.charAt(0);
         }
 
@@ -102,8 +105,11 @@ export default function ReadingModule() {
 
     let aciertos = 0;
     ejercicio.preguntas.forEach(p => {
-      // Como ya forzamos a, b, c, d desde el principio, evaluamos exactamente lo que es
-      if (respuestas[p.id] === p.correcta) {
+      // Por pura paranoia, forzamos tu clic y la correcta a ser una sola letra minúscula
+      const miRespuesta = String(respuestas[p.id]).charAt(0).toLowerCase();
+      const laCorrecta = String(p.correcta).charAt(0).toLowerCase();
+      
+      if (miRespuesta === laCorrecta) {
           aciertos++;
       }
     });
