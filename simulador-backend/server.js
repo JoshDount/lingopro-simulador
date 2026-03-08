@@ -11,15 +11,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = "itc_culiacan_secret_2026";
+const JWT_SECRET = process.env.JWT_SECRET || "itc_culiacan_secret_2026";
 
 // 2. Configuración de MySQL
 const db = mysql.createConnection({
-    host: 'mysql-3b56a3e3-tareasromant-6ac2.a.aivencloud.com', // El Host de tu imagen
-    port: 24690,                                             // El Port de tu imagen
-    user: 'avnadmin',                                        // El User de tu imagen
+    host: process.env.DB_HOST,                               // El Host de tu imagen
+    port: process.env.DB_PORT,                               // El Port de tu imagen
+    user: process.env.DB_USER,                               // El User de tu imagen
     password: process.env.DB_PASSWORD,                       // El Password oculto
-    database: 'defaultdb',                                   // El Database name de tu imagen
+    database: process.env.DB_NAME,                           // El Database name de tu imagen
     ssl: { rejectUnauthorized: false }                       // Obligatorio para Aiven (SSL REQUIRED)
 });
 
