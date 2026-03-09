@@ -2,11 +2,8 @@ import { useState } from 'react';
 
 export default function Login({ setUsuario, irARegistro }) {
   const [datos, setDatos] = useState({ email: '', password: '' });
+  // 1. Agregamos el estado para saber si mostramos o no la contraseña
   const [mostrarPassword, setMostrarPassword] = useState(false);
-
-  const toggleMostrarPassword = () => {
-    setMostrarPassword(!mostrarPassword);
-  };
 
   const entrar = async (e) => {
     e.preventDefault();
@@ -27,8 +24,9 @@ export default function Login({ setUsuario, irARegistro }) {
   };
 
   return (
-    <div className="login-container max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border-2 border-black mt-10">
+    <div className="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border-2 border-black mt-10">
       <h2 className="text-3xl font-extrabold mb-6 text-black text-center uppercase tracking-tighter">Acceso Alumnos</h2>
+      
       <form onSubmit={entrar} className="space-y-5">
         <input 
           type="email" 
@@ -37,34 +35,32 @@ export default function Login({ setUsuario, irARegistro }) {
           onChange={e => setDatos({...datos, email: e.target.value})} 
           required 
         />
-        <div className="input-password-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        
+        {/* 2. Envolvemos el input y el botón en un contenedor relativo */}
+        <div className="relative">
           <input 
             type={mostrarPassword ? "text" : "password"} 
             placeholder="TU CONTRASEÑA" 
-            className="w-full p-4 border-2 border-black rounded-2xl outline-none focus:bg-blue-50 text-black font-bold placeholder:text-black transition-all"
-            style={{ paddingRight: '40px' }}
+            /* Se agregó pr-12 para dar espacio al botón y que el texto no se amontone */
+            className="w-full p-4 pr-12 border-2 border-black rounded-2xl outline-none focus:bg-blue-50 text-black font-bold placeholder:text-black transition-all"
             onChange={e => setDatos({...datos, password: e.target.value})} 
             required 
           />
+          {/* 3. El botón con posición absoluta */}
           <button 
             type="button" 
-            onClick={toggleMostrarPassword}
-            style={{
-              position: 'absolute',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '18px'
-            }}
+            onClick={() => setMostrarPassword(!mostrarPassword)}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-2xl focus:outline-none"
           >
-            {mostrarPassword ? "🙈" : "👁️"} 
+            {mostrarPassword ? "🙈" : "👁️"}
           </button>
         </div>
+
         <button className="w-full bg-black text-white font-black py-4 rounded-2xl hover:bg-slate-800 shadow-lg transform active:scale-95 transition-all uppercase">
           Ingresar al Simulador
         </button>
       </form>
+      
       <p className="mt-6 text-center text-black font-bold cursor-pointer hover:underline" onClick={irARegistro}>
         ¿Eres nuevo? Regístrate aquí
       </p>
