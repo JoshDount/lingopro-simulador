@@ -66,4 +66,16 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.login-container {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.login-container input {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+}
+
 @import "tailwindcss";
